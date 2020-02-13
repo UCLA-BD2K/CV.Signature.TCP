@@ -1,8 +1,8 @@
-# CV-Signature-TCP
+# Cardiovascular Signature Temporal Clustering Platform
 
 During cardiovascular disease progression, multiple cellular systems (e.g., cardiac proteome) undergo diverse molecular changes. The temporal patterns of individual biomolecules depict their unique responses towards pathological drivers and contribute to underlying biological processes disrupted by disease progression. Advances in high-throughput omics technology have enabled cost-effective temporal profiling of targeted systems in animal models of human disease.
 
-CV-Signature-TCP is a open source R package to identifying temporal molecular signatures from time-course omics data. It is consisted of 3 modules, “preprocessing”, “clustering”, and “evaluation”.  First, two independent methods cubic splines and reduced rank PCA are provided for data preprocessing (i.e., missing data imputation and denoising). Next, two independent classification methods, k-means or hierarchical clustering are available to classify temporal patterns of biological variables. Finally, a jackstraw test is employed for evaluation, identifying biological variables strongly related to the representative pattern of temporal clusters.
+```CV.Signature.TCP``` is a open source R package to identifying temporal molecular signatures from time-course omics data. It is consisted of 3 modules, “preprocessing”, “clustering”, and “evaluation”.  First, two independent methods cubic splines and reduced rank PCA are provided for data preprocessing (i.e., missing data imputation and denoising). Next, two independent classification methods, k-means or hierarchical clustering are available to classify temporal patterns of biological variables. Finally, a jackstraw test is employed for evaluation, identifying biological variables strongly related to the representative pattern of temporal clusters.
 
 We found that our platform produced biological meaningful clusters, enabling further functional delineation. Its flexible parameter settings and analytical routes allow a broader adaptation to other time-course omics data.
 
@@ -15,20 +15,19 @@ install.packages("devtools")
 library("devtools")
 
 setRepositories(ind=1:2)
-install_github("UCLA-BD2K/CV-Signature-TCP")
+install_github("UCLA-BD2K/CV.Signature.TCP")
 ```
 
-#### Dependencies
+#### Bioconductor dependencies
 
 Some of Bioconductor dependencies may fail to be automatically installed. This is a known issue at the moment:
 https://github.com/r-lib/devtools/issues/700#issuecomment-235127291
-https://stackoverflow.com/questions/14343817/cran-package-depends-on-bioconductor-package-installing-error?rq=1
 
 Therefore, if you get an error message about "package or namespace load failed", install them manually:
 
 ```R
 source("https://bioconductor.org/biocLite.R")
-biocLite(c('bioc_package1','bioc_package2'))
+biocLite(c('multtest'))
 ```
 
 # Data
