@@ -3,13 +3,15 @@
 \docType{data}
 \name{cys_optm}
 \alias{cys_optm}
-\title{Cysteine oxidative post-translational modifications (O-PTM) of proteomes in cardiac hypertrophy}
-\format{A data frame with 490 rows (O-PTM sites) and 9 columns:
+\title{Cysteine oxidative post-translational modifications (O-PTM) of proteomes in cardiac hypertrophyhh, with missing values}
+\format{
+A data frame with 848 rows (O-PTM sites) and 10 columns:
 \describe{
-  \item{column 1-3}{meta data for O-PTM sites}
-  \item{column 4-9}{ratios of occupancies in ISO over that in control conditions, from 1 to 14 days}
+  \item{column 1-4}{meta data for O-PTM sites}
+  \item{column 5-10}{ratios of occupancies in ISO over that in control conditions, from 1 to 14 days}
   ...
-}}
+}
+}
 \source{
 Peipei Ping lab at UCLA
 }
@@ -17,6 +19,7 @@ Peipei Ping lab at UCLA
 cys_optm
 }
 \description{
-The temporal changes of 490 Cysteine O-PTMs on 235 proteins over 14 days. It contains three different types of Cys modifications: reversible cysteine O-PTM, cysteine sulfinylation (CysSO2H), and cysteine sulfonylation (CysSO3H).
+The temporal changes of 848 Cysteine O-PTMs over 14 days. This data contains missing values.
+It contains three different types of Cys modifications: reversible cysteine O-PTM, cysteine sulfinylation (CysSO2H), and cysteine sulfonylation (CysSO3H).
 }
 \keyword{datasets}

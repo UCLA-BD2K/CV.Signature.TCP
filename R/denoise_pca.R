@@ -56,7 +56,7 @@ denoise_pca <- function(dat,
     stop("\n\r To denoise the data with PCA, r must be a numeric value corresponding to the number of PCs to retain.")
   }
 
-  dat.denoise <- bcv::impute.svd(dat, k=r)$x
+  dat.denoise <- bcv::impute.svd(dat, k=r, ...)$x
   rownames(dat.denoise) <- rownames(dat)
   colnames(dat.denoise) <- colnames(dat)
 

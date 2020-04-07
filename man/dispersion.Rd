@@ -42,10 +42,11 @@ It's recommended that you look at both results \code{zdisp} and \code{disp} to d
 }
 \examples{
 \dontrun{
-data(cys_optm_missing)
-meta <- cys_optm_missing[,1:3]
-optm <- log(cys_optm_missing[,4:9])
-days <- as.numeric(colnames(optm_missing))
+data(cys_optm)
+meta <- cys_optm[,1:4]
+optm <- log(cys_optm[meta$Select,5:10])
+optm <- t(scale(t(optm), scale=TRUE, center=TRUE))
+days <- as.numeric(colnames(optm))
 
 disp_optm <- dispersion(optm, timepoints = days, dof="cv")
 disp_optm <- cbind(meta, disp_optm)

@@ -11,6 +11,7 @@ denoise_spline(
   center.dat = TRUE,
   scale.dat = FALSE,
   verbose = FALSE,
+  label.imputed = FALSE,
   seed = NULL,
   ...
 )
@@ -28,6 +29,8 @@ denoise_spline(
 
 \item{verbose}{a logical specifying to print the computational progress. By default, \code{FALSE}.}
 
+\item{label.imputed}{a logical specifying to return an additional matrix that labels imputed values. By default, \code{FALSE}.}
+
 \item{seed}{a seed for the random number generator.}
 
 \item{...}{optional arguments.}
@@ -44,8 +47,9 @@ Lastly, \code{dof} can be set to a fixed numeric value predetermied by the user.
 \examples{
 \dontrun{
 data(cys_optm)
-meta <- cys_optm[,1:3]
-optm <- log(cys_optm[,4:9])
+meta <- cys_optm[,1:4]
+optm <- log(cys_optm[meta$Select,5:10])
+optm <- t(scale(t(optm), scale=TRUE, center=TRUE))
 days <- as.numeric(colnames(optm))
 
 denoised_optm <- denoise_spline(optm, timepoints = days, dof="cv")

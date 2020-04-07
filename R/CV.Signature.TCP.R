@@ -46,7 +46,7 @@
 #' @references J Wang, H Choi, NC Chung, Q Cao, DCM Ng, B Mirza, SB Scruggs, D Wang, AO Garlid, P Ping (2018). Integrated dissection of the cysteine oxidative post-translational modification proteome during cardiac hypertrophy. Journal of Proteome Research.
 #' @references NC Chung (2020). Statistical significance of cluster membership for unsupervised evaluation of single cell identities. Bioinformatics
 #'
-#' @export tms
+#' @export CV.Signature.TCP
 #' @import splines
 #' @importFrom jackstraw jackstraw_kmeans
 #' @importFrom corpcor fast.svd
@@ -61,7 +61,7 @@
 #' optm <- t(scale(t(optm), scale=TRUE, center=TRUE))
 #' days <- as.numeric(colnames(optm))
 #'
-#' optm.tms <- tms(optm,
+#' output <- CV.Signature.TCP(optm,
 #'                 timepoints = days,
 #'                 center.dat = TRUE,
 #'                 scale.dat = TRUE,
@@ -76,25 +76,25 @@
 #'                )
 #'
 #' # see the elbow plot
-#' cluster.elbow(dat=optm.tms$denoised, FUNcluster=kmeans, method="wss", k.max=10, linecolor="black")
+#' cluster.elbow(dat=output$denoised, FUNcluster=kmeans, method="wss", k.max=10, linecolor="black")
 #'
 #' # make the cluster figure
-#' optm.fig <- vis_cluster(optm.tms$denoised, group=optm.tms$membership)
+#' optm.fig <- vis_cluster(output$denoised, group=output$membership)
 #'
 #' # to modify/polish the figure (ggplot2 object)
 #' optm.fig <- optm.fig + labs(y="Log-transformed Occupancy Ratio", x="Time (day)", title="All O-PTMs") + ylim(-2,2) + facet_wrap(~ cluster,nrow=1,ncol=6)
 #'
 #' # filter the data based on jackstraw PIP and make a figure
 #' library(jackstraw)
-#' optm.pip <- pip(optm.tms$evaluated$p.F, pi0=sum(optm.tms$evaluated$p.F > .05)/length(optm.tms$evaluated$p.F))
+#' optm.pip <- pip(output$evaluated$p.F, pi0=sum(output$evaluated$p.F > .05)/length(output$evaluated$p.F))
 #' hist(optm.pip,100,col="black")
-#' optm.pip.fig <- vis_cluster(optm.tms$denoised[optm.pip > .9,], group=optm.tms$membership[optm.pip > .9])
+#' optm.pip.fig <- vis_cluster(output$denoised[optm.pip > .9,], group=output$membership[optm.pip > .9])
 #' optm.pip.fig <- optm.pip.fig + labs(y="Log-transformed Occupancy Ratio", x="Time (day)", title="O-PTMs with PIP > 0.9") + ylim(-2,2) + facet_wrap(~ cluster,nrow=1,ncol=6)
 #'
 #' library(cowplot)
 #' optm.fig / optm.pip.fig
 #'}
-tms <- function(dat,
+CV.Signature.TCP <- function(dat,
                 timepoints=NULL,
                 center.dat = TRUE,
                 scale.dat = FALSE,
@@ -132,7 +132,7 @@ tms <- function(dat,
                                center.dat = center.dat, scale.dat = scale.dat,
                                verbose = verbose, seed = NULL)
   } else {
-    stop("No denoising selected. If you would like to proceed without denoising, simply use individual functions such as `tms::cluster`.")
+    stop("No denoising selected. If you would like to proceed without denoising, simply use individual functions.")
   }
 
   if(scale.dat | center.dat) dat.denoised <- t(scale(t(dat.denoised),center=center.dat,scale=scale.dat))

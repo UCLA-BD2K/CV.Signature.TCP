@@ -57,8 +57,9 @@ This is a convenient wrapper to Kmeans and Hierarchical clustering when using th
 \dontrun{
 ## load the example "coptm" data
 data(cys_optm)
-meta <- cys_optm[,1:3]
-optm <- cys_optm[,4:9]
+meta <- cys_optm[,1:4]
+optm <- log(cys_optm[meta$Select,5:10])
+optm <- t(scale(t(optm), scale=TRUE, center=TRUE))
 days <- as.numeric(colnames(optm))
 
 ## denoise using the cubic splines

@@ -40,8 +40,9 @@ If the denoising step is used, please input the denoised data.
 \examples{
 \dontrun{
 data(cys_optm)
-meta <- cys_optm[,1:3]
-optm <- cys_optm[,4:9]
+meta <- cys_optm[,1:4]
+optm <- log(cys_optm[meta$Select,5:10])
+optm <- t(scale(t(optm), scale=TRUE, center=TRUE))
 days <- as.numeric(colnames(optm))
 
 pca.elbow(dat=optm,

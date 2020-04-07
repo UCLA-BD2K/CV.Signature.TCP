@@ -1,7 +1,7 @@
 Package: CV.Signature.TCP
 Type: Package
 Title: Cardiovascular Signature Temporal Clustering Platform
-Version: 0.9.9
+Version: 0.9.10
 Author: Neo Christopher Chung <nchchung@gmail.com>
 Maintainer: Neo Christopher Chung <nchchung@gmail.com>
 Description: Discovering cardiovascular signatures in time-course -omic data. This package presents an analysis pipeline for time-course or longitudinal proteomics, genomics, and other molecular data by applying denoising, unsupervised classification, and evaluation of cluster memberships. It currently implements denoising using cubic splines and principal component analysis (PCA); unsupervised classification by hierarchical and K-means clustering algorithms; and evaluation by the jackstraw tests for cluster memberships. Visualization and diagnostic tools for clustering analysis and reduced dimensions are provided.
@@ -27,5 +27,5 @@ Imports:
 	TSclust
 Encoding: UTF-8
 LazyData: true
-RoxygenNote: 7.0.1
+RoxygenNote: 7.1.0
 VignetteBuilder: knitr

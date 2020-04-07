@@ -12,6 +12,7 @@ denoise_pca(
   center.dat = TRUE,
   scale.dat = FALSE,
   verbose = FALSE,
+  label.imputed = FALSE,
   seed = NULL,
   ...
 )
@@ -23,6 +24,7 @@ denoise_svd(
   center.dat = TRUE,
   scale.dat = FALSE,
   verbose = FALSE,
+  label.imputed = FALSE,
   seed = NULL,
   ...
 )
@@ -39,6 +41,8 @@ denoise_svd(
 \item{scale.dat}{a logical specifying to scale the input and denoised data. By default, \code{FALSE}.}
 
 \item{verbose}{a logical specifying to print the computational progress. By default, \code{FALSE}.}
+
+\item{label.imputed}{a logical specifying to return an additional matrix that labels imputed values. By default, \code{FALSE}.}
 
 \item{seed}{a seed for the random number generator.}
 
@@ -57,8 +61,9 @@ If the input data has missing values, the SVDImpute algorithm (Troyanskaya et al
 \examples{
 \dontrun{
 data(cys_optm)
-meta <- cys_optm[,1:3]
-optm <- log(cys_optm[,4:9])
+meta <- cys_optm[,1:4]
+optm <- log(cys_optm[meta$Select,5:10])
+optm <- t(scale(t(optm), scale=TRUE, center=TRUE))
 days <- as.numeric(colnames(optm))
 
 denoised_optm <- denoise_pca(optm, timepoints = days, r=3)
