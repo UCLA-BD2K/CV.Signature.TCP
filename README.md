@@ -20,10 +20,7 @@ install_github("UCLA-BD2K/CV.Signature.TCP")
 
 #### Bioconductor
 
-Some of Bioconductor dependencies may fail to be automatically installed. This is a known issue at the moment:
-https://github.com/r-lib/devtools/issues/700#issuecomment-235127291
-
-Therefore, if you get an error message about "package or namespace load failed", install them manually:
+Some of Bioconductor dependencies may fail to be automatically installed. Therefore, if you get an error message about "package or namespace load failed", install them manually:
 
 ```R
 source("https://bioconductor.org/biocLite.R")
@@ -34,8 +31,10 @@ biocLite(c('multtest'))
 
 On MacOS, you may have to install XQuartz (https://xquartz.org) to load ```rgl```.
 
-# Data
+# Reference
 
-This package includes a partial dataset from the following publication:
+Forthcoming publication
+
+# Data
 
 J Wang, H Choi, NC Chung, Q Cao, DCM Ng, B Mirza, SB Scruggs, D Wang, AO Garlid, P Ping (2018). Integrated dissection of the cysteine oxidative post-translational modification proteome during cardiac hypertrophy. Journal of Proteome Research <https://pubs.acs.org/doi/abs/10.1021/acs.jproteome.8b00372>
