@@ -11,6 +11,7 @@
 #' @param center.dat a logical specifying to center the input and denoised data. By default, \code{TRUE}.
 #' @param scale.dat a logical specifying to scale the input and denoised data. By default, \code{FALSE}.
 #' @param verbose a logical specifying to print the computational progress. By default, \code{FALSE}.
+#' @param label.imputed a logical specifying to return an additional matrix that labels imputed values. By default, \code{FALSE}. 
 #' @param seed a seed for the random number generator.
 #' @param ... optional arguments.
 #'
@@ -37,6 +38,7 @@ denoise_spline <- function(dat,
                           center.dat = TRUE,
                           scale.dat = FALSE,
                           verbose = FALSE,
+                          label.imputed = FALSE,
                           seed = NULL,
                           ...) {
 
@@ -88,5 +90,9 @@ denoise_spline <- function(dat,
   rownames(dat.denoise) <- rownames(dat)
   colnames(dat.denoise) <- colnames(dat)
 
-  return(dat.denoise)
+  if(label.imputed) {
+    return(list(dat.denoise=dat.denoise, imputed=is.na(dat)))
+  } else {
+    return(dat.denoise)
+  }
 }

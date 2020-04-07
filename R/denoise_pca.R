@@ -11,6 +11,7 @@
 #' @param center.dat a logical specifying to center the input and denoised data. By default, \code{TRUE}.
 #' @param scale.dat a logical specifying to scale the input and denoised data. By default, \code{FALSE}.
 #' @param verbose a logical specifying to print the computational progress. By default, \code{FALSE}.
+#' @param label.imputed a logical specifying to return an additional matrix that labels imputed values. By default, \code{FALSE}.
 #' @param seed a seed for the random number generator.
 #' @param ... optional arguments.
 #'
@@ -37,6 +38,7 @@ denoise_pca <- function(dat,
                 center.dat = TRUE,
                 scale.dat = FALSE,
                 verbose = FALSE,
+                label.imputed = FALSE,
                 seed = NULL,
                 ...) {
 
@@ -44,10 +46,6 @@ denoise_pca <- function(dat,
   m <- nrow(dat)
   n <- ncol(dat)
   if(scale.dat | center.dat) dat <- t(scale(t(dat),center=center.dat,scale=scale.dat))
-  if(sum(is.na(dat)) > 0) {
-    message("Imputing missing values with SVD/PCA.")
-    dat <- bcv::impute.svd(dat, k=r)$x
-  }
 
   # sanity check
   if(n != length(timepoints)) stop("denoise_pca: The number of time points must match the number of columns in the input data.")
@@ -57,13 +55,16 @@ denoise_pca <- function(dat,
   } else {
     stop("\n\r To denoise the data with PCA, r must be a numeric value corresponding to the number of PCs to retain.")
   }
-  svd.out <- fast.svd(dat)
-  dat.denoise <- svd.out$u[,1:r,drop=FALSE] %*% diag(svd.out$d[1:r,drop=FALSE]) %*% t(svd.out$v[,1:r,drop=FALSE])
 
+  dat.denoise <- bcv::impute.svd(dat, k=r)$x
   rownames(dat.denoise) <- rownames(dat)
   colnames(dat.denoise) <- colnames(dat)
 
-  return(dat.denoise)
+  if(label.imputed) {
+    return(list(dat.denoise=dat.denoise, imputed=is.na(dat)))
+  } else {
+    return(dat.denoise)
+  }
 }
 
 #' @rdname denoise_pca

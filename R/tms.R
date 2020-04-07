@@ -1,9 +1,9 @@
-#' Identify the temporal molecular signatures
+#' Cardiovascular Signature Temporal Clustering Platform (CV.Signature.TCP)
 #'
 #' Denoise, classify, and evaluate variables (biomarkers) from time course data such as proteomics and other high-throughput technologies.
 #'
-#' This function combines multiple steps. For more options and fine-tuning, please use individual functions in `tms` package.
-#' \code{tms} attempts to identify temporal dynamics, by clustering denoise and/or time-wrapped data.
+#' This function combines multiple steps. For more options and fine-tuning, please use individual functions in `CV.Signature.TCP` package.
+#' This attempts to identify temporal dynamics, by clustering denoise and/or time-wrapped data.
 #' This requires the user to input the data (\code{dat}) where the rows and columns are variables (e.g., genes, proteins) and observations taken at different time points, respectively.
 #' Correspondingly, \code{timepoints} is a vector of actual time points (e.g., hours, days) corresponding to the columns of \code{dat}.
 #'
@@ -35,7 +35,7 @@
 #' @param seed a seed for the random number generator.
 #' @param ... optional arguments.
 #'
-#' @return \code{tms} returns a list consisting of
+#' @return \code{CV.Signature.TCP} returns a list consisting of
 #' \item{denoised}{\code{m * n} denoised data.}
 #' \item{dat.dist}{\code{m * m} distance matrix. Only returns when using hclust}
 #' \item{cluster.obj}{an object returned from clustering the denoised data.}
