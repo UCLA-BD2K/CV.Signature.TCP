@@ -1,13 +1,15 @@
 #' Deonise the input data by principal component analysis (PCA)
 #'
-#' The data is denoised by using the top r eigenmatrices.
+#' The data is denoised and the missing values are imputed by using the top r eigenmatrices.
 #' After apply SVD on the centered and/or scaled data, the top r eigenmatrices are constructed where is r < (n,m).
 #'
-#' If the input data has missing values, the SVDImpute algorithm (Troyanskaya et al. 2001) is used.
+#' Two methods are provided. For method="nipals", a Non-linear Iterative Partial Least Squares (NIPALS) algorithm is used from \code{nipals} in the mixOmics package.
+#' For method="em", a low-rank SVD approximation by the EM algorithm is used from \code{imputed.svd} in the bcv package.
 #'
 #' @param dat a time-series data matrix with \code{m} biomarkers as rows, over \code{n} time points (columns).
 #' @param timepoints a vector of time points for columns of dat.
 #' @param r the number of PCs or eigenmatrices to retain.
+#' @param method a method to perform singular-value decomposition when a dataset has missing values. See below for the explanation.
 #' @param center.dat a logical specifying to center the input and denoised data. By default, \code{TRUE}.
 #' @param scale.dat a logical specifying to scale the input and denoised data. By default, \code{FALSE}.
 #' @param verbose a logical specifying to print the computational progress. By default, \code{FALSE}.
@@ -18,6 +20,7 @@
 #' @return \code{denoise_pca} returns a matrix of denoised data.
 #'
 #' @export denoise_pca
+#' @importFrom mixOmics nipals
 #' @importFrom corpcor fast.svd
 #' @importFrom bcv impute.svd
 #' @author Neo Christopher Chung \email{nchchung@@gmail.com}
@@ -30,11 +33,12 @@
 #' optm <- t(scale(t(optm), scale=TRUE, center=TRUE))
 #' days <- as.numeric(colnames(optm))
 #'
-#' denoised_optm <- denoise_pca(optm, timepoints = days, r=3)
+#' denoised_optm <- denoise_pca(optm, timepoints = days, r=3, method=c("nipals","em"))
 #'}
 denoise_pca <- function(dat,
                 timepoints=NULL,
                 r=NULL,
+                method = c("em","nipals"),
                 center.dat = TRUE,
                 scale.dat = FALSE,
                 verbose = FALSE,
@@ -56,7 +60,12 @@ denoise_pca <- function(dat,
     stop("\n\r To denoise the data with PCA, r must be a numeric value corresponding to the number of PCs to retain.")
   }
 
-  dat.denoise <- bcv::impute.svd(dat, k=r, ...)$x
+  if(method=="em") {
+    dat.denoise <- bcv::impute.svd(dat, k=r, ...)$x
+  } else if(method=="nipals") {
+    dat.denoise <- mixOmics::nipals(dat, reconst = TRUE, ncomp = r)$rec
+  }
+
   rownames(dat.denoise) <- rownames(dat)
   colnames(dat.denoise) <- colnames(dat)
 

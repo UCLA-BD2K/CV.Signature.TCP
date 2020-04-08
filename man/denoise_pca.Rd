@@ -9,6 +9,7 @@ denoise_pca(
   dat,
   timepoints = NULL,
   r = NULL,
+  method = c("em", "nipals"),
   center.dat = TRUE,
   scale.dat = FALSE,
   verbose = FALSE,
@@ -21,6 +22,7 @@ denoise_svd(
   dat,
   timepoints = NULL,
   r = NULL,
+  method = c("em", "nipals"),
   center.dat = TRUE,
   scale.dat = FALSE,
   verbose = FALSE,
@@ -35,6 +37,8 @@ denoise_svd(
 \item{timepoints}{a vector of time points for columns of dat.}
 
 \item{r}{the number of PCs or eigenmatrices to retain.}
+
+\item{method}{a method to perform singular-value decomposition when a dataset has missing values. See below for the explanation.}
 
 \item{center.dat}{a logical specifying to center the input and denoised data. By default, \code{TRUE}.}
 
@@ -52,11 +56,12 @@ denoise_svd(
 \code{denoise_pca} returns a matrix of denoised data.
 }
 \description{
-The data is denoised by using the top r eigenmatrices.
+The data is denoised and the missing values are imputed by using the top r eigenmatrices.
 After apply SVD on the centered and/or scaled data, the top r eigenmatrices are constructed where is r < (n,m).
 }
 \details{
-If the input data has missing values, the SVDImpute algorithm (Troyanskaya et al. 2001) is used.
+Two methods are provided. For method="nipals", a Non-linear Iterative Partial Least Squares (NIPALS) algorithm is used from \code{nipals} in the mixOmics package.
+For method="em", a low-rank SVD approximation by the EM algorithm is used from \code{imputed.svd} in the bcv package.
 }
 \examples{
 \dontrun{
@@ -66,7 +71,7 @@ optm <- log(cys_optm[meta$Select,5:10])
 optm <- t(scale(t(optm), scale=TRUE, center=TRUE))
 days <- as.numeric(colnames(optm))
 
-denoised_optm <- denoise_pca(optm, timepoints = days, r=3)
+denoised_optm <- denoise_pca(optm, timepoints = days, r=3, method=c("nipals","em"))
 }
 }
 \references{

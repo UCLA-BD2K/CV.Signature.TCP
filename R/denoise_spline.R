@@ -11,7 +11,7 @@
 #' @param center.dat a logical specifying to center the input and denoised data. By default, \code{TRUE}.
 #' @param scale.dat a logical specifying to scale the input and denoised data. By default, \code{FALSE}.
 #' @param verbose a logical specifying to print the computational progress. By default, \code{FALSE}.
-#' @param label.imputed a logical specifying to return an additional matrix that labels imputed values. By default, \code{FALSE}. 
+#' @param label.imputed a logical specifying to return an additional matrix that labels imputed values. By default, \code{FALSE}.
 #' @param seed a seed for the random number generator.
 #' @param ... optional arguments.
 #'
