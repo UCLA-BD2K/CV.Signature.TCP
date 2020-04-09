@@ -14,15 +14,11 @@ vignette: |
 knitr::opts_chunk$set(warning=FALSE, message=FALSE, cache=TRUE, fig.height = 4, fig.width = 7, fig.align = "center",tidy.opts=list(width.cutoff=80),tidy=TRUE)
 ```
 
-Cardiovascular diseases are manifested on expression levels of genes, metabolites, and proteins. Molecular responses to such complex diseases evolve over time, which may hold a key to understanding their mechanisms, responses, and prognosis. Therefore, in order to understand temporal dynamics of cardiovascular diseases, we are interested in investigating model organisms and cardiac patients over time. To extract reliable molecular signatures from time-series molecular data, we use a non-parametric data analysis pipeline of denosing, clustering, and evaluation. This vignette introduces how to run this analysis pipeline.
+During cardiovascular disease progression, multiple systems in the myocardium  (e.g., cardiac proteome) undergo diverse molecular changes. The temporal patterns of individual biomolecules depict their unique responses towards pathological drivers and contribute to underlying pathogenesis. Advances in high-throughput omics technology have enabled cost-effective temporal profiling of targeted systems in animal models of human disease. Therefore, in order to understand temporal dynamics of cardiovascular diseases, we are interested in investigating model organisms and cardiac patients over time. ```CV.Signature.TCP``` extracts molecular signatures from time-series proteomics and other -omics data. This vignette introduces how to run this analysis. For its introduction and reference, please see Chung et al. (2020).
 
 ## Oxidative Post-Translational Modifications (O-PTM)
 
-We consider cysteine O-PTM occupancies in mouse over time, that are undergoing cardiac remodeling (Wang et al. 2018). Briefly, the temporal changes (sites, PTM types, and occupancy) in 3 types of cysteine O-PTMs (reversible cysteine O-PTMs; irreversible cysteine sulphinylation, CysSO2H; Cysteine sulphonylation, CysSO3H) at the proteome level were obtained using a mouse model of isoproterenol (ISO) induced cardiac remodeling. Male C57BL6/J mice (9-12 wks old) were treated with ISO or saline for 14 days (4 replicates/treatment, n=3/group); the left ventricle tissue were harvested at 6 time points (0, 1, 3, 5, 7, 14 days) and subjected to proteomics characterization to determine the cysteine O-PTM temporal features. The ratios of O-PTMs in ISO conditions over these in control conditions are calculated. These ratios represent the cysteine O-PTMs undergoing cardiac remodeling, and are included in this R package. 
-
->J Wang, H Choi, NC Chung, Q Cao, DCM Ng, B Mirza, SB Scruggs, D Wang, AO Garlid, P Ping (2018). Integrated dissection of the cysteine oxidative post-translational modification proteome during cardiac hypertrophy. Journal of Proteome Research <https://pubs.acs.org/doi/abs/10.1021/acs.jproteome.8b00372>
-
-Load this dataset and loaded objects by ```ls()```. We additionally make sure about certain meta info:
+We consider cysteine O-PTM occupancies in mouse over time, that are undergoing cardiac remodeling (Wang et al. 2018). Briefly, the temporal changes (sites, PTM types, and occupancy) in 3 types of cysteine O-PTMs (reversible cysteine O-PTMs; irreversible cysteine sulphinylation, CysSO2H; Cysteine sulphonylation, CysSO3H) at the proteome level were obtained using a mouse model of isoproterenol (ISO) induced cardiac remodeling. Male C57BL6/J mice (9-12 wks old) were treated with ISO or saline for 14 days (4 replicates/treatment, n=3/group); the left ventricle tissue were harvested at 6 time points (0, 1, 3, 5, 7, 14 days) and subjected to proteomics characterization to determine the cysteine O-PTM temporal features. The ratios of O-PTMs in ISO conditions over these in control conditions are calculated. These ratios represent the cysteine O-PTMs undergoing cardiac remodeling, and some of those data are included in this R package. 
 
 ```{r data}
 library(CV.Signature.TCP)
@@ -32,9 +28,6 @@ optm <- log(cys_optm[meta$Select,5:10])
 optm <- t(scale(t(optm), scale=TRUE, center=TRUE))
 days <- as.numeric(colnames(optm))
 ls()
-
-# center & scale each row
-optm <- t(scale(t(optm), scale=TRUE, center=TRUE))
 
 head(optm)
 print(days)
@@ -48,17 +41,17 @@ class(optm)
 
 The main function is the eponymous function called ```tms()```. It essentially runs the whole analysis pipeline with minimal user inputs. Three steps of denoising, clustering, and evaluation can be specified by arguments ```denoise```, ```cluster.method```, and ```evaluate```, respectively. Each of these steps are described in details below. For a starter, one can run ```tms()``` on the loaded dataset ```cys_optm``` that denoise the data with fitting cubic splines, applying k-means clustering, and evaluating with the jackstraw tests.
 
-```{r QuickStart}
+```{r Quick, eval = FALSE, echo=FALSE}
 optm.tms <- CV.Signature.TCP(optm,
                 timepoints = days,
-                center.dat = TRUE,
-                scale.dat = TRUE,
+                center.dat = TRUE, #should each row centered?
+                scale.dat = TRUE, #should each row scaled?
                 denoise = c("smooth.spline"),
                 denoise.parameter=c("cv"),
                 cluster.method = c("kmeans"),
-                K = 6,
-                evaluate = TRUE,
-                verbose = FALSE,
+                K = 5, #a number of clusters
+                evaluate = TRUE, #run a jackstraw or not?
+                verbose = FALSE, #output diagnostic messages
                 seed = 1
                )
 ```
@@ -71,7 +64,7 @@ Temporal structure provides a unique opportunity to de-noise time-series data, t
 
 ### Cubic Splines
 
-First, use cubic splines for denoising by fitting a cubic spline for each molecular variable and obtaining the fitted/predicted values. Temporal dynamics of O-PTM may be assumed to evolve with continuity such that smooth curves approximate their true signals. The degree of freedom (DoF) is a hyperparameter requied for cubic splines. It can be chosen automatically by cross-validation for each molecular variable. On the other hand, the global option (```dof="cv.global```) pools all the cross-validated DoFs and use the mean value for all variables. Otherwise, one may supply a manually chosen DoF.
+First, use cubic splines for denoising by fitting a cubic spline for each molecular variable and obtaining the fitted/predicted values. Temporal dynamics of O-PTM may be assumed to evolve with continuity such that smooth curves approximate their true signals. The degree of freedom (DoF) is a hyperparameter requied for cubic splines. It can be chosen automatically by cross-validation for each molecular variable. 
 
 ```{r denoise_spline}
 require(splines)
@@ -79,8 +72,12 @@ require(splines)
 # a degree of freedom for each variable is estimated through cross-validation
 denoised_optm <- denoise_spline(dat = optm,
                                 timepoints = days,
-                                dof="cv")
+                                dof="cv") 
+```
 
+On the other hand, the global option (```dof="cv.global```) pools all the cross-validated DoFs and use the mean value for all variables. Also, one may supply a manually chosen DoF.
+
+```{r denoise_spline_globalcv, eval = FALSE}
 # a degree of freedom is set for the whole dataset,
 # by taking a mean of CV-estimated degrees of freedom 
 denoised_optm_global <- denoise_spline(dat = optm,
@@ -93,11 +90,12 @@ denoised_optm_global <- denoise_spline(dat = optm,
 Second, PCA is applied on the observed data, and the top $r$ PCs are used to reconstruct the data. This parameter $r$ should be given to an argument. Essentially, the $r$ rank data capture the most important patterns. PCA-based method does *not* utilize the time points, and instead take the major systematic variation captured by a $r$ ranked matrix. Our general recommendation for time-course experiments is to use cubic splines for denoising.
 
 ```{r denoisepca}
-# use PCA for denoising with the top 6 PCs
+# use PCA/SVD for denoising with the top r=3 PCs, with the EM or NIPALS algorithm
 denoised_optm_pca <- denoise_pca(dat = optm,
                                  timepoints = days,
                                  r=3,
-                                 maxiter = 1000)
+                                 maxiter = 1000,
+                                 method="em") #method="nipals" available
 ```
 
 The elbow plot for PCA, showing the percent variances explained by individual principal components (PCs), may aid in determining the number of PCs to use in the denoising process. Specifically, using the singular values (which are diagonal elements in $D$) from applying SVD on the data, one can calculate the percent variances by $d^2 / \sum(d^2)$. The function ```pca.elbow``` automates this process.
@@ -109,25 +107,7 @@ pca.elbow(dat=denoised_optm,
 
 ## Unsupervised Clustering
 
-We provide two ways to estimate similarity between molecular variables (e.g., proteins). First, we can measure the correlation dissimilarity, which is specified by an argument ```dist.method = "cor.dis"```. Secdon, we distances between molecular variables are computed using dynamic time wrapping (DTW). Unlike traditional similarity measures, DTW seek optimal matching among variables that may differ in sampling rates and molecular dynamics. 
-
-Two popular clustering methods are included. With an output from DTW or a correlation-based dissimilarity matrix, you can run a hierarchical clustering to classify molecular variables. Distance measures are used to identify coherent sets that may be related to mechanisms underlying complex diseases. Otherwise, K-means clustering that uses the least squared Euclidean distance can be efficiently run on the denoised data.
-
-```{r cluster_optm}
-## cluster the denoised data using K-means clustering
-clustered_optm <- cluster(denoised_optm,
-                          timepoints = days,
-                          cluster.method = "kmeans",
-                          K=5,
-                          center.dat = TRUE,
-                          scale.dat = TRUE,
-                          verbose = FALSE
-                          )
-```
-
-Identifying the optimal number of clusters to use is one of the key challenges in unsupervised learning. For an introductory discussion, see \url{https://en.wikipedia.org/wiki/Determining_the_number_of_clusters_in_a_data_set}. Furthermore, the R package `NbClust` (available at \url{http://cran.r-project.org/web/packages/NbClust/}) provides a wide range of approaches for this task. It is always important to consider biological and molecular contexts to appropriate select $K$, as well as considering multiple visual and analytical approaches.
-
-One of the most popular visual approaches to help deciding the number of clusters is within sums of squares (wss). We provide a wrapper function to ```fviz_nbclust``` from the factoextra package to create this elbow plot. The common advice is to find the elbow (or the inflection point) when plotting the within sums of squares:
+Identifying the optimal number of clusters to use is one of the key challenges in unsupervised learning which is beyond the scope of this vignette. For an introductory discussion, see \url{https://en.wikipedia.org/wiki/Determining_the_number_of_clusters_in_a_data_set} and algorithms in `factoextra` and `NbClust`. It is always important to consider biological and molecular contexts to appropriate select $K$, as well as considering multiple visual and analytical approaches. We provide a few visual approaches to help deciding the number of clusters. The common advice is to find the elbow (or the inflection point) when plotting the within sums of squares (wss):
 
 ```{r clusterelbow}
 library(factoextra)
@@ -138,6 +118,18 @@ The same function can be used to also loook at the silhouette plot (Rousseeuw, 1
 
 ```{r clusterelbow_extra}
 cluster.elbow(dat=denoised_optm, FUNcluster=kmeans, method="silhouette", k.max=10)
+```
+
+Then, clustering is conducted as follow. We provide two ways to estimate similarity between molecular variables (e.g., proteins). First, ```cluster.method = "kmeans"``` runs a well-known K-means clustering that uses the least squared Euclidean distance. Second, ```cluster.method = "hclust"``` runs a hierarchical clustering from an output from DTW or a correlation-based dissimilarity matrix. 
+
+```{r cluster_optm}
+## cluster the denoised data using K-means clustering
+clustered_optm <- cluster(denoised_optm,
+                          timepoints = days,
+                          cluster.method = "kmeans",
+                          center.dat = TRUE,
+                          scale.dat = TRUE,
+                          K=5)
 ```
 
 ## Jackstraw Evalution
@@ -151,7 +143,6 @@ require(jackstraw)
 dat.evaluated <- jackstraw_kmeans(dat = denoised_optm,
                                   kmeans.dat = clustered_optm$cluster.obj,
                                   B = 1000,
-                                  center = TRUE,
                                   verbose = FALSE,
                                   seed=1)
 
@@ -159,14 +150,24 @@ hist(dat.evaluated$p.F, main="P-value Histogram")
 summary(dat.evaluated$p.F)
 ```
 
-From the resulting p-values, we are interested in estimating the posterior probability that a given variable should be included in its assigned cluster. This quantity is called posterior inclusion probabilities (PIPs). Let's esetimate PIPs from p-values.
+From the resulting p-values, we are interested in estimating the posterior probability that a given variable should be included in its assigned cluster. This quantity is called posterior inclusion probabilities (PIPs) which help conduct feature selection (Chung, 2020). Let's estimate PIPs from p-values.
 
 ```{r evaluation_pip}
+dat.evaluated$pip <- pip(dat.evaluated$p.F, lambda=.5)
+
 # p-values are stored in dat.evaluated$p.F
 # PIP are stored in dat.evaluated$pip
-dat.evaluated$pip <- pip(dat.evaluated$p.F)
 plot(dat.evaluated$p.F, dat.evaluated$pip, pch=20)
 abline(h=.9,col="red")
+```
+
+This method use the ```lfdr``` estimation in the qvalue package. It attemp to automatically estimate the proportion of null variables ($\pi_0$). One may try to provide ```pi0``` or ```lambda```.  For a certain set of p-values, this may not be feasible (see a quick primer, (\url{http://varianceexplained.org/statistics/interpreting-pvalue-histogram/})). One may set ```pi0 = 1``` for the most conservative approach.
+
+Alternatively, one could use other p-value adjustments or false discovery rate procedures. For example, we use the R function ```p.adjust``` to estimate FDRs using the Benjamini-Hochberg procedure.
+
+```{r vis_cluster_BH}
+# estimate the false discovery rates from a Benjamini-Hochberg procedure
+dat.evaluated$p.adjust <- p.adjust(dat.evaluated$p.F, method="BH")
 ```
 
 ## Visualization
@@ -184,26 +185,24 @@ vis_cluster(dat = denoised_optm,
 p <- vis_cluster(dat = denoised_optm,
                        group = clustered_optm$membership)
 # for example, save the plot into a pdf file
-ggsave(filename="optm_clusters.pdf", plot = p, width = 10, height = 6)
+# ggsave(filename="optm_clusters.pdf", plot = p, width = 10, height = 6)
 ```
 
 We can also use the jackstraw analysis to select O-PTMs that are shown to be strongly related to each cluster. Some O-PTMs may have been assigned to a given cluster by chance and p-values and posterior inclusion probabilities (PIPs) from the jackstraw tests can help us remove them. When using the threshold of 90% (PIP > 0.9), `r sum(dat.evaluated$pip > .9)` out of `r length(dat.evaluated$pip)` O-PTMs are deemed significant. 
 
 ```{r vis_cluster_pip}
 # use the PIPs calculated from the previous section
-# only retain O-PTMs with PIPs > .9 
-vis_cluster(dat = denoised_optm[dat.evaluated$pip > .9,],
-                  group = clustered_optm$membership[dat.evaluated$pip > .9])
+# only retain O-PTMs with PIPs > .8 
+vis_cluster(dat = denoised_optm[dat.evaluated$pip > .8,],
+                  group = clustered_optm$membership[dat.evaluated$pip > .8]) + coord_cartesian(ylim=c(-3.5, 3.5))
 ```
 
-Note that calculating PIPs (equivalently local FDRs using the q-value package) requires reliably estimating the proportion of null variables ($\pi_0$). For a certain set of p-values, this may not be feasible; then, try to set ```pi0 = 1``` which gives a conservative estimate.
+## References
 
-Alternatively, one could use other p-value adjustments or false discovery rate procedures. For example, we use the R function ```p.adjust``` to estimate FDRs using the Benjamini-Hochberg procedure.
+**R package**
 
-```{r vis_cluster_BH}
-# estimate the false discovery rates from a Benjamini-Hochberg procedure
-# only retain O-PTMs with BH FDR < .1
-dat.evaluated$p.adjust <- p.adjust(dat.evaluated$p.F, method="BH")
-vis_cluster(dat = denoised_optm[dat.evaluated$p.adjust < .1,],
-                  group = clustered_optm$membership[dat.evaluated$p.adjust < .1])
-```
+NC Chung, H Choi, B Mirza, D Wang, D Sigdel, W Wang, P Ping (2020). Identifying Temporal Molecular Signatures Underlying Cardiovascular Diseases: A Data Science Platform. Under revision at Journal of Molecular and Cellular Cardiology
+
+**O-PTM data**
+
+J Wang*, H Choi*, NC Chung, Q Cao, DCM Ng, B Mirza, SB Scruggs, D Wang, AO Garlid, P Ping (2018). Integrated dissection of the cysteine oxidative post-translational modification proteome during cardiac hypertrophy. Journal of Proteome Research <https://pubs.acs.org/doi/abs/10.1021/acs.jproteome.8b00372>

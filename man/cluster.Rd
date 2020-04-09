@@ -5,7 +5,7 @@
 \title{Wrapper to clustering algorithms}
 \usage{
 cluster(
-  dat.denoise,
+  dat,
   timepoints = NULL,
   K,
   dist.method = c("euclidean", "cor.diss", "dtw"),
@@ -20,7 +20,7 @@ cluster(
 )
 }
 \arguments{
-\item{dat.denoise}{a (denoised) data matrix with \code{m} biomarkers as rows, over \code{n} time points (columns).}
+\item{dat}{a (denoised) data matrix with \code{m} biomarkers as rows, over \code{n} time points (columns).}
 
 \item{timepoints}{a vector of time points for columns of dat. While this is not necessary, it's here for now to remind the user about the analysis pipeline.}
 

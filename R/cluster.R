@@ -2,7 +2,7 @@
 #'
 #' This is a convenient wrapper to Kmeans and Hierarchical clustering when using the `tms` package.
 #'
-#' @param dat.denoise a (denoised) data matrix with \code{m} biomarkers as rows, over \code{n} time points (columns).
+#' @param dat a (denoised) data matrix with \code{m} biomarkers as rows, over \code{n} time points (columns).
 #' @param timepoints a vector of time points for columns of dat. While this is not necessary, it's here for now to remind the user about the analysis pipeline.
 #' @param K a number of clusters.
 #' @param dist.method a distance method for time course data, resulting in a \code{m * m} distance matrix for rows. 'dtw' for dynamic time wrapping or 'cor.diss' for correlation-based dissimilarities.
@@ -45,7 +45,7 @@
 #'                 scale.dat = FALSE,
 #'                 verbose = TRUE)
 #'}
-cluster <- function(dat.denoise,
+cluster <- function(dat,
                 timepoints=NULL,
                 K,
                 dist.method = c("euclidean", "cor.diss", "dtw"),
@@ -59,22 +59,22 @@ cluster <- function(dat.denoise,
                 ...) {
 
   if (is.null(seed)) set.seed(seed)
-  m <- nrow(dat.denoise)
-  n <- ncol(dat.denoise)
-  if(scale.dat | center.dat) dat <- t(scale(t(dat.denoise),center=center.dat,scale=scale.dat))
+  m <- nrow(dat)
+  n <- ncol(dat)
+  if(scale.dat | center.dat) dat <- t(scale(t(dat),center=center.dat,scale=scale.dat))
   # sanity check
   if(n != length(timepoints)) stop("The number of time points must match the number of columns in the input data.")
+  if(cluster.method == "kmeans") {dist.method == "euclidean"}
   if(cluster.method=="kmeans" & dist.method=="dtw") { stop("You have chosen `dtw` and `kmeans`. To cluster a distance matrix from DTW, please use hclust.") }
 
   #### DISTANCE
-  if(cluster.method == "kmeans") dist.method == "euclidean"
   if(dist.method == "dtw") {
     if(verbose) message("\n\r Compute a distance matrix based on dynamic time wrapping.")
-    dat.dist <- dtwDist(mx=dat.denoise, method="DTW")
+    dat.dist <- dtwDist(mx=dat, method="DTW")
     dat.dist <- as.dist(dat.dist)
   } else if(dist.method == "cor.diss") {
     if(verbose) message("\n\r Compute a distance matrix based on correlation dissimilarity.")
-    dat.dist <- TSclust::diss(dat.denoise, "COR")
+    dat.dist <- TSclust::diss(dat, "COR")
   }
 
   #### CLUSTER
@@ -84,7 +84,7 @@ cluster <- function(dat.denoise,
     dat.hc.mem <- cutree(dat.hc, k = K)
     centers <- NULL
     for(k in 1:K){
-      centers <- rbind(centers, colMeans(dat.denoise[dat.hc.mem == k, , drop = FALSE]))
+      centers <- rbind(centers, colMeans(dat[dat.hc.mem == k, , drop = FALSE]))
     }
     dat.hc.centers <- hclust(dist(centers), method = hclust.algorithm, members = table(dat.hc.mem))
 
@@ -100,7 +100,7 @@ cluster <- function(dat.denoise,
                    membership = dat.hc.mem)
   } else if(cluster.method == "kmeans") {
     if(verbose) message("\n\r Applying Kmeans Clustering")
-    dat.kmeans <- kmeans(dat.denoise, centers = K, algorithm = kmeans.algorithm, ...)
+    dat.kmeans <- kmeans(dat, centers = K, algorithm = kmeans.algorithm, ...)
 
     output <- list(cluster.obj= dat.kmeans,
                    membership = dat.kmeans$cluster)
