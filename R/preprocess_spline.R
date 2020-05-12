@@ -1,6 +1,6 @@
 #' Preprocess the input data by fitting cubic splines
 #'
-#' The data is denoised and/or imputed by fitting cubic splines.
+#' The data is denoised and/or imputed by fitting cubic splines. This requires a minimum of 4 data points per variables (e.g., proteins).
 #' If a degree of freedom (\code{dof}) is set to \code{cv}, cross validation is performed on each variable to identify the optimal dof for that variable.
 #' If \code{dof} set to \code{cv.global}, the mean of all cross-validated DoFs is used for all variables.
 #' Lastly, \code{dof} can be set to a fixed numeric value predetermied by the user.
@@ -14,7 +14,7 @@
 #' @param seed a seed for the random number generator.
 #' @param ... optional arguments.
 #'
-#' @return \code{preprocess_spline} returns a matrix of imputed and/or denoised data.
+#' @return \code{preprocess_spline} returns an imputed data, a denoised and imputed data data, and a vector of degrees of freedom.
 #'
 #' @export preprocess_spline
 #' @import splines
@@ -49,6 +49,7 @@ preprocess_spline <- function(dat,
   if(n != length(timepoints)) stop("denoise_spline: The number of time points must match the number of columns in the input data.")
 
   dat.denoise = matrix(0, nrow=m, ncol=n)
+  df <- vector("numeric",m)
   if(dof == "cv") {
     if(verbose) message("\n\r Individual degrees of freedom via cross validation:")
     for(i in 1:m) {
@@ -57,10 +58,10 @@ preprocess_spline <- function(dat,
       #fitting smoothing splines using smooth.spline(X,Y,df=...)
       tpi <- data.frame(x=timepoints, y=dat[i,])
       spline.fit <- with(tpi[!is.na(tpi$y),], smooth.spline(x,y,cv = TRUE))
+      df[i] <- spline.fit$df
       dat.denoise[i,] <- with(tpi, predict(spline.fit, x)$y)
     }
   } else if(dof == "cv.global") {
-    df <- vector("numeric",m)
     if(verbose) message("\n\r Cross Validation:")
     for(i in 1:m) {
       if(verbose) cat(i)
@@ -71,11 +72,17 @@ preprocess_spline <- function(dat,
     for(i in 1:m) {
       if(verbose) cat(i)
       tpi <- data.frame(x=timepoints, y=dat[i,])
-      spline.fit <- with(tpi[!is.na(tpi$y),], smooth.spline(x,y,df=median(df)))
+      globaldf = median(df, na.rm = TRUE)
+      message(paste("The median DoF is used for all variables:",globaldf))
+      spline.fit <- with(tpi[!is.na(tpi$y),], smooth.spline(x,y,df=globaldf))
       dat.denoise[i,] <- with(tpi, predict(spline.fit, x)$y)
     }
-    if(verbose) hist(df,main="Degrees of Freedom from Cross Validation")
+    if(verbose) {
+      hist(df,20,col="grey",main="Degrees of Freedom from Cross Validation")
+      abline(v=globaldf,col="red",lty="dashed")
+    }
   } else if(is.numeric(dof)){
+    df <- dof
     if(verbose) message("\n\r The degree of freedom (dof) is set to the user input:")
     for(i in 1:m) {
       if(verbose) cat(i)
@@ -93,7 +100,8 @@ preprocess_spline <- function(dat,
 
 	return(list(dat.impute=dat.impute,
 				dat.denoise=dat.denoise,
-				imputed=is.na(dat)))
+				imputed=is.na(dat),
+				df=df))
 }
 
 #' @rdname denoise_pca
