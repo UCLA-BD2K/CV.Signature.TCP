@@ -73,11 +73,11 @@ preprocess_spline <- function(dat,
       if(verbose) cat(i)
       tpi <- data.frame(x=timepoints, y=dat[i,])
       globaldf = median(df, na.rm = TRUE)
-      message(paste("The median DoF is used for all variables:",globaldf))
       spline.fit <- with(tpi[!is.na(tpi$y),], smooth.spline(x,y,df=globaldf))
       dat.denoise[i,] <- with(tpi, predict(spline.fit, x)$y)
     }
     if(verbose) {
+      message(paste("The median DoF is used for all variables:",globaldf))
       hist(df,20,col="grey",main="Degrees of Freedom from Cross Validation")
       abline(v=globaldf,col="red",lty="dashed")
     }

@@ -52,6 +52,7 @@ cluster <- function(dat,
                 cluster.method = c("kmeans", "hclust"),
                 hclust.algorithm = "complete", # see hclust for a full list
                 kmeans.algorithm = "Hartigan-Wong", # see kmeans for a full list
+                kmeans.centers,
                 center.dat = TRUE,
                 scale.dat = FALSE,
                 verbose = FALSE,
@@ -100,7 +101,11 @@ cluster <- function(dat,
                    membership = dat.hc.mem)
   } else if(cluster.method == "kmeans") {
     if(verbose) message("\n\r Applying Kmeans Clustering")
-    dat.kmeans <- kmeans(dat, centers = K, algorithm = kmeans.algorithm, ...)
+    if(missing(kmeans.centers)) {
+      dat.kmeans <- kmeans(dat, centers = K, algorithm = kmeans.algorithm, ...)
+    } else {
+      dat.kmeans <- kmeans(dat, algorithm = kmeans.algorithm, centers = kmeans.centers, ...)
+    }
 
     output <- list(cluster.obj= dat.kmeans,
                    membership = dat.kmeans$cluster)

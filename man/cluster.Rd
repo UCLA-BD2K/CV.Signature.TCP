@@ -12,6 +12,7 @@ cluster(
   cluster.method = c("kmeans", "hclust"),
   hclust.algorithm = "complete",
   kmeans.algorithm = "Hartigan-Wong",
+  kmeans.centers,
   center.dat = TRUE,
   scale.dat = FALSE,
   verbose = FALSE,
