@@ -1,6 +1,6 @@
-#' Deonise the input data by fitting cubic splines
+#' Preprocess the input data by fitting cubic splines
 #'
-#' The data is denoised by fitting cubic splines.
+#' The data is denoised and/or imputed by fitting cubic splines.
 #' If a degree of freedom (\code{dof}) is set to \code{cv}, cross validation is performed on each variable to identify the optimal dof for that variable.
 #' If \code{dof} set to \code{cv.global}, the mean of all cross-validated DoFs is used for all variables.
 #' Lastly, \code{dof} can be set to a fixed numeric value predetermied by the user.
@@ -11,13 +11,12 @@
 #' @param center.dat a logical specifying to center the input and denoised data. By default, \code{TRUE}.
 #' @param scale.dat a logical specifying to scale the input and denoised data. By default, \code{FALSE}.
 #' @param verbose a logical specifying to print the computational progress. By default, \code{FALSE}.
-#' @param label.imputed a logical specifying to return an additional matrix that labels imputed values. By default, \code{FALSE}.
 #' @param seed a seed for the random number generator.
 #' @param ... optional arguments.
 #'
-#' @return \code{denoise_spline} returns a matrix of denoised data.
+#' @return \code{preprocess_spline} returns a matrix of imputed and/or denoised data.
 #'
-#' @export denoise_spline
+#' @export preprocess_spline
 #' @import splines
 #' @import stats
 #' @import graphics
@@ -30,15 +29,14 @@
 #' optm <- t(scale(t(optm), scale=TRUE, center=TRUE))
 #' days <- as.numeric(colnames(optm))
 #'
-#' denoised_optm <- denoise_spline(optm, timepoints = days, dof="cv")
+#' preprocessed_optm <- preprocess_spline(optm, timepoints = days, dof="cv")
 #'}
-denoise_spline <- function(dat,
+preprocess_spline <- function(dat,
                           timepoints=NULL,
                           dof=c("cv","cv.global"),
                           center.dat = TRUE,
                           scale.dat = FALSE,
                           verbose = FALSE,
-                          label.imputed = FALSE,
                           seed = NULL,
                           ...) {
 
@@ -90,9 +88,14 @@ denoise_spline <- function(dat,
   rownames(dat.denoise) <- rownames(dat)
   colnames(dat.denoise) <- colnames(dat)
 
-  if(label.imputed) {
-    return(list(dat.denoise=dat.denoise, imputed=is.na(dat)))
-  } else {
-    return(dat.denoise)
-  }
+  dat.impute <- dat
+  dat.impute[is.na(dat.impute)]  <- dat.denoise[is.na(dat.impute)]
+
+	return(list(dat.impute=dat.impute,
+				dat.denoise=dat.denoise,
+				imputed=is.na(dat)))
 }
+
+#' @rdname denoise_pca
+#' @export
+denoise_spline <- preprocess_spline

@@ -1,25 +1,24 @@
-#' Deonise the input data by principal component analysis (PCA)
+#' Preprocess the input data by principal component analysis (PCA) and related methods
 #'
 #' The data is denoised and the missing values are imputed by using the top r eigenmatrices.
-#' After apply SVD on the centered and/or scaled data, the top r eigenmatrices are constructed where is r < (n,m).
+#' After apply SVD on the centered and/or scaled data, the top r eigenmatrices are constructed where is r < min(n,m).
 #'
-#' Two methods are provided. For method="nipals", a Non-linear Iterative Partial Least Squares (NIPALS) algorithm is used from \code{nipals} in the mixOmics package.
+#' To impute missing values with PCA/SVD, two approximation methods are provided.
+#' For method="nipals", a Non-linear Iterative Partial Least Squares (NIPALS) algorithm is used from \code{nipals} in the mixOmics package.
 #' For method="em", a low-rank SVD approximation by the EM algorithm is used from \code{imputed.svd} in the bcv package.
 #'
 #' @param dat a time-series data matrix with \code{m} biomarkers as rows, over \code{n} time points (columns).
-#' @param timepoints a vector of time points for columns of dat.
 #' @param r the number of PCs or eigenmatrices to retain.
 #' @param method a method to perform singular-value decomposition when a dataset has missing values. See below for the explanation.
 #' @param center.dat a logical specifying to center the input and denoised data. By default, \code{TRUE}.
 #' @param scale.dat a logical specifying to scale the input and denoised data. By default, \code{FALSE}.
 #' @param verbose a logical specifying to print the computational progress. By default, \code{FALSE}.
-#' @param label.imputed a logical specifying to return an additional matrix that labels imputed values. By default, \code{FALSE}.
 #' @param seed a seed for the random number generator.
 #' @param ... optional arguments.
 #'
-#' @return \code{denoise_pca} returns a matrix of denoised data.
+#' @return \code{preprocess_pca} returns a matrix of imputed and/or denoised data.
 #'
-#' @export denoise_pca
+#' @export preprocess_pca
 #' @importFrom mixOmics nipals
 #' @importFrom corpcor fast.svd
 #' @importFrom bcv impute.svd
@@ -33,16 +32,14 @@
 #' optm <- t(scale(t(optm), scale=TRUE, center=TRUE))
 #' days <- as.numeric(colnames(optm))
 #'
-#' denoised_optm <- denoise_pca(optm, timepoints = days, r=3, method=c("nipals","em"))
+#' preprocessed_optm <- preprocess_pca(optm, timepoints = days, r=3, method=c("nipals","em"))
 #'}
-denoise_pca <- function(dat,
-                timepoints=NULL,
+preprocess_pca <- function(dat,
                 r=NULL,
                 method = c("em","nipals"),
                 center.dat = TRUE,
                 scale.dat = FALSE,
                 verbose = FALSE,
-                label.imputed = FALSE,
                 seed = NULL,
                 ...) {
 
@@ -52,7 +49,7 @@ denoise_pca <- function(dat,
   if(scale.dat | center.dat) dat <- t(scale(t(dat),center=center.dat,scale=scale.dat))
 
   # sanity check
-  if(n != length(timepoints)) stop("denoise_pca: The number of time points must match the number of columns in the input data.")
+  if(r >= ncol(dat) | r >= nrow(dat)) stop("preprocess_pca: The number of PCs r < min(n,m).")
 
   if(is.numeric(r)) {
     if(verbose) message(paste("The number of PCs to retain:",r))
@@ -63,19 +60,20 @@ denoise_pca <- function(dat,
   if(method=="em") {
     dat.denoise <- bcv::impute.svd(dat, k=r, ...)$x
   } else if(method=="nipals") {
-    dat.denoise <- mixOmics::nipals(dat, reconst = TRUE, ncomp = r)$rec
+    dat.denoise <- mixOmics::nipals(dat, reconst = TRUE, ncomp = r, ...)$rec
   }
 
   rownames(dat.denoise) <- rownames(dat)
   colnames(dat.denoise) <- colnames(dat)
 
-  if(label.imputed) {
-    return(list(dat.denoise=dat.denoise, imputed=is.na(dat)))
-  } else {
-    return(dat.denoise)
-  }
+  dat.impute <- dat
+  dat.impute[is.na(dat.impute)]  <- dat.denoise[is.na(dat.impute)]
+
+	return(list(dat.impute=dat.impute,
+				dat.denoise=dat.denoise,
+				imputed=is.na(dat)))
 }
 
 #' @rdname denoise_pca
 #' @export
-denoise_svd <- denoise_pca
+denoise_pca <- preprocess_pca
